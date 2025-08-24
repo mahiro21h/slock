@@ -1,11 +1,16 @@
-slock - simple screen locker
+slock - simple screen locker (patched)
 ============================
-simple screen locker utility for X.
+patched simple screen locker which can disable tty switching for [xlibre xserver](https://github.com/X11Libre/xserver)
 
 
 Requirements
 ------------
-In order to build slock you need the Xlib header files.
+you need to install the following packages in order:
+
+- [xorgproto](https://github.com/mahiro21h/xorgproto/tree/myextension)
+- [xcbproto](https://github.com/mahiro21h/xcbproto/tree/myextension)
+- [libxcb](https://github.com/mahiro21h/libxcb/tree/myextension)
+- [xlibre-xserver](https://github.com/mahiro21h/xserver/tree/myextension) (make sure you have xlibre-xserver==25.0.0.9 before installing)
 
 
 Installation
