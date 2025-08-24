@@ -19,6 +19,8 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <xcb/xcb.h>
+#include <xcb/myextension.h>
 
 #include "arg.h"
 #include "util.h"
@@ -126,8 +128,8 @@ gethash(void)
 }
 
 static void
-readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
-       const char *hash)
+readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **locks,
+	   int nscreens, const char *hash)
 {
 	XRRScreenChangeNotifyEvent *rre;
 	char buf[32], passwd[256], *inputhash;
@@ -221,6 +223,9 @@ readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
 				XRaiseWindow(dpy, locks[screen]->win);
 		}
 	}
+	xcb_myextension_unlock_screen_cookie_t uc = xcb_myextension_unlock_screen(ctrl);
+	xcb_generic_error_t * err;
+	xcb_myextension_unlock_screen_reply_t * ur = xcb_myextension_unlock_screen_reply(ctrl, uc, &err);
 }
 
 static struct lock *
@@ -317,6 +322,7 @@ main(int argc, char **argv) {
 	gid_t dgid;
 	const char *hash;
 	Display *dpy;
+	xcb_connection_t * ctrl;
 	int s, nlocks, nscreens;
 
 	ARGBEGIN {
@@ -348,7 +354,8 @@ main(int argc, char **argv) {
 	if (!crypt("", hash))
 		die("slock: crypt: %s\n", strerror(errno));
 
-	if (!(dpy = XOpenDisplay(NULL)))
+	ctrl = xcb_connect(NULL, NULL);
+	if (!(dpy = XOpenDisplay(NULL)) || xcb_connection_has_error(ctrl))
 		die("slock: cannot open display\n");
 
 	/* drop privileges */
@@ -362,6 +369,12 @@ main(int argc, char **argv) {
 	/* check for Xrandr support */
 	rr.active = XRRQueryExtension(dpy, &rr.evbase, &rr.errbase);
 
+	xcb_generic_error_t * err;
+	xcb_myextension_query_version_cookie_t vc = xcb_myextension_query_version(ctrl, XCB_MYEXTENSION_MAJOR_VERSION, XCB_MYEXTENSION_MINOR_VERSION);
+	xcb_myextension_query_version_reply_t * vr = xcb_myextension_query_version_reply(ctrl, vc, &err);
+	if (!vr)
+		die("vr");
+
 	/* get number of screens in display "dpy" and blank them */
 	nscreens = ScreenCount(dpy);
 	if (!(locks = calloc(nscreens, sizeof(struct lock *))))
@@ -372,6 +385,8 @@ main(int argc, char **argv) {
 		else
 			break;
 	}
+	xcb_myextension_lock_screen_cookie_t lc = xcb_myextension_lock_screen(ctrl);
+	xcb_myextension_lock_screen_reply_t * lr = xcb_myextension_lock_screen_reply(ctrl, lc, &err);
 	XSync(dpy, 0);
 
 	/* did we manage to lock everything? */
@@ -390,7 +405,7 @@ main(int argc, char **argv) {
 	}
 
 	/* everything is now blank. Wait for the correct password */
-	readpw(dpy, &rr, locks, nscreens, hash);
+	readpw(dpy, ctrl, &rr, locks, nscreens, hash);
 
 	return 0;
 }
