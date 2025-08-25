@@ -1,6 +1,8 @@
 slock - simple screen locker (patched)
 ============================
-patched simple screen locker which can disable tty switching for [xlibre xserver](https://github.com/X11Libre/xserver)
+patched simple screen locker which can disable tty switching and zapping for [xlibre xserver](https://github.com/X11Libre/xserver)
+
+NOTE: be sure to run `setxkbmap -option "terminate:ctrl_alt_bksp"` before testing dontzap. [see](https://www.x.org/archive/X11R7.5/doc/RELNOTES.txt) for more info
 
 
 Requirements
