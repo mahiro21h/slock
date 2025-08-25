@@ -7,7 +7,7 @@ NOTE: be sure to run `setxkbmap -option "terminate:ctrl_alt_bksp"` before testin
 
 Requirements
 ------------
-you need to install the following packages in order:
+you need to install the following patched packages starting from top to bottom:
 
 - [xorgproto](https://github.com/mahiro21h/xorgproto/tree/myextension)
 - [xcbproto](https://github.com/mahiro21h/xcbproto/tree/myextension)
