@@ -223,9 +223,11 @@ readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **l
 				XRaiseWindow(dpy, locks[screen]->win);
 		}
 	}
-	xcb_myextension_unlock_screen_cookie_t uc = xcb_myextension_unlock_screen(ctrl);
 	xcb_generic_error_t * err;
-	xcb_myextension_unlock_screen_reply_t * ur = xcb_myextension_unlock_screen_reply(ctrl, uc, &err);
+	xcb_myextension_unlock_screen_reply_t * ur = xcb_myextension_unlock_screen_reply(
+		ctrl,
+		xcb_myextension_unlock_screen(ctrl),
+		&err);
 }
 
 static struct lock *
@@ -370,8 +372,12 @@ main(int argc, char **argv) {
 	rr.active = XRRQueryExtension(dpy, &rr.evbase, &rr.errbase);
 
 	xcb_generic_error_t * err;
-	xcb_myextension_query_version_cookie_t vc = xcb_myextension_query_version(ctrl, XCB_MYEXTENSION_MAJOR_VERSION, XCB_MYEXTENSION_MINOR_VERSION);
-	xcb_myextension_query_version_reply_t * vr = xcb_myextension_query_version_reply(ctrl, vc, &err);
+	xcb_myextension_query_version_reply_t * vr = xcb_myextension_query_version_reply(
+		ctrl,
+		xcb_myextension_query_version(
+			ctrl, XCB_MYEXTENSION_MAJOR_VERSION, XCB_MYEXTENSION_MINOR_VERSION),
+		&err);
+
 	if (!vr)
 		die("vr");
 
@@ -385,8 +391,10 @@ main(int argc, char **argv) {
 		else
 			break;
 	}
-	xcb_myextension_lock_screen_cookie_t lc = xcb_myextension_lock_screen(ctrl);
-	xcb_myextension_lock_screen_reply_t * lr = xcb_myextension_lock_screen_reply(ctrl, lc, &err);
+	xcb_myextension_lock_screen_reply_t * lr = xcb_myextension_lock_screen_reply(
+		ctrl,
+		xcb_myextension_lock_screen(ctrl),
+		&err);
 	XSync(dpy, 0);
 
 	/* did we manage to lock everything? */
