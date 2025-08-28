@@ -380,6 +380,8 @@ main(int argc, char **argv) {
 
 	if (!vr)
 		die("vr");
+	if (vr->server_major_version != 1)
+		die("unsupported version of xserver extension: %u", vr->server_major_version);
 
 	/* get number of screens in display "dpy" and blank them */
 	nscreens = ScreenCount(dpy);
