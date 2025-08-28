@@ -223,11 +223,14 @@ readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **l
 				XRaiseWindow(dpy, locks[screen]->win);
 		}
 	}
-	xcb_generic_error_t * err;
-	xcb_myextension_unlock_screen_reply_t * ur = xcb_myextension_unlock_screen_reply(
+	/*
+	 * unlocking currently can't fail so don't store the reply
+	 * or pass `xcb_generic_error_t **`
+	 */
+	xcb_myextension_unlock_screen_reply(
 		ctrl,
 		xcb_myextension_unlock_screen(ctrl),
-		&err);
+		NULL);
 }
 
 static struct lock *
@@ -393,10 +396,14 @@ main(int argc, char **argv) {
 		else
 			break;
 	}
-	xcb_myextension_lock_screen_reply_t * lr = xcb_myextension_lock_screen_reply(
+	/*
+	 * locking currently can't fail so don't store the reply
+	 * or pass `xcb_generic_error_t **`
+	 */
+	xcb_myextension_lock_screen_reply(
 		ctrl,
 		xcb_myextension_lock_screen(ctrl),
-		&err);
+		NULL);
 	XSync(dpy, 0);
 
 	/* did we manage to lock everything? */
