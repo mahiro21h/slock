@@ -224,13 +224,9 @@ readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **l
 		}
 	}
 	/*
-	 * unlocking currently can't fail so don't store the reply
-	 * or pass `xcb_generic_error_t **`
+	 * unlocking currently can't fail so ignore result of `xcb_request_check()`
 	 */
-	xcb_myextension_unlock_screen_reply(
-		ctrl,
-		xcb_myextension_unlock_screen(ctrl),
-		NULL);
+	xcb_request_check(ctrl, xcb_myextension_unlock_screen_checked(ctrl));
 }
 
 static struct lock *
@@ -397,13 +393,9 @@ main(int argc, char **argv) {
 			break;
 	}
 	/*
-	 * locking currently can't fail so don't store the reply
-	 * or pass `xcb_generic_error_t **`
+	 * locking currently can't fail so ignore result of `xcb_request_check()`
 	 */
-	xcb_myextension_lock_screen_reply(
-		ctrl,
-		xcb_myextension_lock_screen(ctrl),
-		NULL);
+	xcb_request_check(ctrl, xcb_myextension_lock_screen_checked(ctrl));
 	XSync(dpy, 0);
 
 	/* did we manage to lock everything? */
