@@ -21,6 +21,7 @@
 #include <X11/Xutil.h>
 #include <xcb/xcb.h>
 #include <xcb/myextension.h>
+#include <assert.h>
 
 #include "arg.h"
 #include "util.h"
@@ -170,6 +171,11 @@ readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **l
 				if (running) {
 					XBell(dpy, 100);
 					failure = 1;
+					/*
+					 * uncomment the line below to crash the screensaver
+					 * if password is incorrect
+					 */
+					/* assert(0); */
 				}
 				explicit_bzero(&passwd, sizeof(passwd));
 				len = 0;
@@ -227,6 +233,8 @@ readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **l
 	 * unlocking currently can't fail so ignore result of `xcb_request_check()`
 	 */
 	xcb_request_check(ctrl, xcb_myextension_unlock_screen_checked(ctrl));
+
+	xcb_request_check(ctrl, xcb_myextension_unregister_screen_locker_checked(ctrl));
 }
 
 static struct lock *
@@ -313,6 +321,25 @@ usage(void)
 	die("usage: slock [-v] [cmd [arg ...]]\n");
 }
 
+/*
+ * get absolute path to this executable
+ */
+static inline void
+get_exec_path(char exec_path[255], uint32_t exec_path_max,
+			  uint32_t * exec_path_len) {
+	*exec_path_len = readlink(
+		"/proc/self/exe", exec_path, exec_path_max - 1);
+
+	switch(*exec_path_len) {
+		case -1:
+		case 255 - 1:
+			assert(0);
+	}
+
+	exec_path[*exec_path_len] = '\0';
+	printf("exec_path: '%s'\n", exec_path);
+}
+
 int
 main(int argc, char **argv) {
 	struct xrandr rr;
@@ -333,6 +360,52 @@ main(int argc, char **argv) {
 	default:
 		usage();
 	} ARGEND
+
+	/*
+	 * the value of `$DISPLAY` must be hard-coded because the process inherits
+	 * the xserver's environment
+	 */
+	ctrl = xcb_connect(":0", NULL);
+	if (!(dpy = XOpenDisplay(":0")) || xcb_connection_has_error(ctrl))
+		die("slock: cannot open display\n");
+
+	/* check availability of myextension and its version */
+	xcb_generic_error_t * err;
+	xcb_myextension_query_version_reply_t * vr = xcb_myextension_query_version_reply(
+		ctrl,
+		xcb_myextension_query_version(
+			ctrl, XCB_MYEXTENSION_MAJOR_VERSION, XCB_MYEXTENSION_MINOR_VERSION),
+		&err);
+
+	if (!vr) /* not available */
+		die("extension not available\n");
+	if (vr->server_major_version != 1)
+		die("unsupported version of extension: %u\n", vr->server_major_version);
+
+	/* register screen locker */
+	uint32_t exec_path_len;
+	char exec_path[255];
+	get_exec_path(exec_path, sizeof(exec_path), &exec_path_len);
+
+	xcb_myextension_register_screen_locker_reply_t * rep =
+		xcb_myextension_register_screen_locker_reply(
+			ctrl,
+			xcb_myextension_register_screen_locker(ctrl, -1, exec_path_len, exec_path),
+			&err);
+	if (!rep) {
+		if (err)
+			printf("error code: %u\n", err->error_code);
+		die("rep\n");
+	}
+
+	switch(rep->response) {
+	case 0: /* screen locker was registered successfully */
+		return 0; /* exit and let the xserver start us up */
+	case 2: /* already registered */
+		break;
+	default:
+		assert(0);
+	}
 
 	/* validate drop-user and -group */
 	errno = 0;
@@ -355,10 +428,6 @@ main(int argc, char **argv) {
 	if (!crypt("", hash))
 		die("slock: crypt: %s\n", strerror(errno));
 
-	ctrl = xcb_connect(NULL, NULL);
-	if (!(dpy = XOpenDisplay(NULL)) || xcb_connection_has_error(ctrl))
-		die("slock: cannot open display\n");
-
 	/* drop privileges */
 	if (setgroups(0, NULL) < 0)
 		die("slock: setgroups: %s\n", strerror(errno));
@@ -369,18 +438,6 @@ main(int argc, char **argv) {
 
 	/* check for Xrandr support */
 	rr.active = XRRQueryExtension(dpy, &rr.evbase, &rr.errbase);
-
-	xcb_generic_error_t * err;
-	xcb_myextension_query_version_reply_t * vr = xcb_myextension_query_version_reply(
-		ctrl,
-		xcb_myextension_query_version(
-			ctrl, XCB_MYEXTENSION_MAJOR_VERSION, XCB_MYEXTENSION_MINOR_VERSION),
-		&err);
-
-	if (!vr)
-		die("vr");
-	if (vr->server_major_version != 1)
-		die("unsupported version of xserver extension: %u", vr->server_major_version);
 
 	/* get number of screens in display "dpy" and blank them */
 	nscreens = ScreenCount(dpy);
