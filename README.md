@@ -5,6 +5,20 @@ patched simple screen locker which can disable tty switching and zapping for [xl
 NOTE: be sure to run `setxkbmap -option "terminate:ctrl_alt_bksp"` before testing dontzap. [see](https://www.x.org/archive/X11R7.5/doc/RELNOTES.txt) for more info
 
 
+Planned changes
+---------------
+- [x] perform security checks on `exec_path `
+  - [x] verify that `exe_path` is null terminated
+  - [x] verify that `exe_path` points to a valid executable
+- [-] securely re-launch screen locker
+  - [x] monitor and re-launch screen locker if it crashes
+  - [ ] cover screens with fallback windows until screen locker creates its windows
+- [ ] screen locker always above all windows
+  - [ ] add new window attribute specifically for screen locker windows
+  - [ ] new windows are never stacked above screen locker windows
+- [ ] use xnamespace extension
+
+
 Requirements
 ------------
 you need to install the following patched packages starting from top to bottom:
