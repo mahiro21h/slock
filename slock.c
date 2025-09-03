@@ -229,6 +229,10 @@ readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **l
 				XRaiseWindow(dpy, locks[screen]->win);
 		}
 	}
+
+	for (screen = 0; screen < nscreens; screen++)
+		xcb_request_check(ctrl,
+						  xcb_myextension_destroy_window_checked(ctrl, locks[screen]->win));
 	/*
 	 * unlocking currently can't fail so ignore result of `xcb_request_check()`
 	 */
@@ -248,13 +252,12 @@ xcb_screen_t * screen_of_display (xcb_connection_t * c, int screen) {
 }
 
 static struct lock *
-lockscreen(Display *dpy, struct xrandr *rr, int screen)
+lockscreen(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, int screen)
 {
 	char curs[] = {0, 0, 0, 0, 0, 0, 0, 0};
 	int i, ptgrab, kbgrab;
 	struct lock *lock;
 	XColor color, dummy;
-	XSetWindowAttributes wa;
 	Cursor invisible;
 
 	if (dpy == NULL || screen < 0 || !(lock = malloc(sizeof(struct lock))))
@@ -270,15 +273,22 @@ lockscreen(Display *dpy, struct xrandr *rr, int screen)
 	}
 
 	/* init */
-	wa.override_redirect = 1;
-	wa.background_pixel = lock->colors[INIT];
-	lock->win = XCreateWindow(dpy, lock->root, 0, 0,
-	                          DisplayWidth(dpy, lock->screen),
-	                          DisplayHeight(dpy, lock->screen),
-	                          0, DefaultDepth(dpy, lock->screen),
-	                          CopyFromParent,
-	                          DefaultVisual(dpy, lock->screen),
-	                          CWOverrideRedirect | CWBackPixel, &wa);
+	xcb_screen_t * xcb_screen = screen_of_display(ctrl, screen);
+	xcb_generic_error_t * err;
+	xcb_myextension_create_window_reply_t * cwr =
+		xcb_myextension_create_window_reply(ctrl,
+			xcb_myextension_create_window(
+				ctrl, xcb_screen->root, xcb_screen->root_visual, 1,
+				(uint32_t *)&lock->colors[INIT]),
+			&err); /* ... */
+	if (!cwr) {
+		if (err)
+			printf("err: %hhu\n", err->error_code);
+		assert(cwr);
+	}
+
+	lock->win = cwr->locker_window;
+
 	lock->pmap = XCreateBitmapFromData(dpy, lock->win, curs, 8, 8);
 	invisible = XCreatePixmapCursor(dpy, lock->pmap, lock->pmap,
 	                                &color, &color, 0, 0);
@@ -454,7 +464,7 @@ main(int argc, char **argv) {
 	if (!(locks = calloc(nscreens, sizeof(struct lock *))))
 		die("slock: out of memory\n");
 	for (nlocks = 0, s = 0; s < nscreens; s++) {
-		if ((locks[s] = lockscreen(dpy, &rr, s)) != NULL)
+		if ((locks[s] = lockscreen(dpy, ctrl, &rr, s)) != NULL)
 			nlocks++;
 		else
 			break;
