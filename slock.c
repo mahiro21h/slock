@@ -224,9 +224,6 @@ readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **l
 					break;
 				}
 			}
-		} else {
-			for (screen = 0; screen < nscreens; screen++)
-				XRaiseWindow(dpy, locks[screen]->win);
 		}
 	}
 
