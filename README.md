@@ -10,23 +10,28 @@ Planned changes
 - [x] perform security checks on `exec_path `
   - [x] verify that `exe_path` is null terminated
   - [x] verify that `exe_path` points to a valid executable
-- [-] securely re-launch screen locker
+- [ ] securely re-launch screen locker
   - [x] monitor and re-launch screen locker if it crashes
-  - [ ] cover screens with fallback windows until screen locker creates its windows
-- [ ] screen locker always above all windows
-  - [ ] add new window attribute specifically for screen locker windows
-  - [ ] new windows are never stacked above screen locker windows
+  - [ ] ~~cover screens with fallback windows until screen locker creates its windows~~ no longer necessary
+  - [ ] handle failed re-launch attempts
+    - [ ] check for failure of `fork()` and `execve()`
+    - [ ] stop re-launching if attempts exceed limit
+    - [ ] update screenlocker windows to inform user that the session is now locked
+- [x] screen locker always above all windows
+  - [x] add new window attribute specifically for screen locker windows
+  - [x] new windows are never stacked above screen locker windows
 - [ ] use xnamespace extension
-
+- [ ] ensure extension works in the case where the system is woken up after being suspended
+- [ ] ensure extension works in the case where xserver's internal screensaver kicks in while screen is locked?
 
 Requirements
 ------------
-you need to install the following patched packages starting from top to bottom:
+you need to install the following patched packages starting from top to bottom (make sure you have xlibre-xserver installed before installing):
 
 - [xorgproto](https://github.com/mahiro21h/xorgproto/tree/myextension)
 - [xcbproto](https://github.com/mahiro21h/xcbproto/tree/myextension)
 - [libxcb](https://github.com/mahiro21h/libxcb/tree/myextension)
-- [xlibre-xserver](https://github.com/mahiro21h/xserver/tree/myextension) (make sure you have xlibre-xserver==25.0.0.9 before installing)
+- [xlibre-xserver](https://github.com/mahiro21h/xserver/tree/myextension)
 
 
 Installation
