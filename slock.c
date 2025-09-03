@@ -1,4 +1,5 @@
 /* See LICENSE file for license details. */
+#include <stdint.h>
 #define _XOPEN_SOURCE 500
 #if HAVE_SHADOW_H
 #include <shadow.h>
