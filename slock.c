@@ -286,6 +286,11 @@ lockscreen(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, int screen)
 	}
 
 	lock->win = cwr->locker_window;
+	/* we might've gotten the window we had before we crashed, so clear its
+	 * contents with the initial color. otherwise, user won't realize we
+	 * crashed */
+	XSetWindowBackground(dpy, lock->win, lock->colors[INIT]);
+	XClearWindow(dpy, lock->win);
 
 	lock->pmap = XCreateBitmapFromData(dpy, lock->win, curs, 8, 8);
 	invisible = XCreatePixmapCursor(dpy, lock->pmap, lock->pmap,
