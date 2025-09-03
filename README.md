@@ -12,13 +12,13 @@ Planned changes
   - [x] verify that `exe_path` points to a valid executable
 - [ ] securely re-launch screen locker
   - [x] monitor and re-launch screen locker if it crashes
-  - [ ] ~~cover screens with fallback windows until screen locker creates its windows~~ no longer necessary
+  - [x] ~~cover screens with fallback windows until screen locker creates its windows~~ no longer necessary
   - [ ] handle failed re-launch attempts
     - [ ] check for failure of `fork()` and `execve()`
     - [ ] stop re-launching if attempts exceed limit
     - [ ] update screenlocker windows to inform user that the session is now locked
 - [x] screen locker always above all windows
-  - [x] add new window attribute specifically for screen locker windows
+  - [x] ~~add new window attribute specifically for screen locker windows~~ doesn't appear to be necessary
   - [x] new windows are never stacked above screen locker windows
 - [ ] use xnamespace extension
 - [ ] ensure extension works in the case where the system is woken up after being suspended
