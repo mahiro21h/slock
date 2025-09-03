@@ -173,8 +173,8 @@ readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **l
 					XBell(dpy, 100);
 					failure = 1;
 					/*
-					 * uncomment the line below to crash the screensaver
-					 * if password is incorrect
+					 * uncomment the line below to crash slock if password
+					 * is incorrect
 					 */
 					/* assert(0); */
 				}
