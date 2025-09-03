@@ -237,6 +237,16 @@ readpw(Display *dpy, xcb_connection_t * ctrl, struct xrandr *rr, struct lock **l
 	xcb_request_check(ctrl, xcb_myextension_unregister_screen_locker_checked(ctrl));
 }
 
+/* https://xcb.freedesktop.org/xlibtoxcbtranslationguide#screenofdisplay */
+xcb_screen_t * screen_of_display (xcb_connection_t * c, int screen) {
+	xcb_screen_iterator_t iter = xcb_setup_roots_iterator(xcb_get_setup(c));
+	for (; iter.rem; --screen, xcb_screen_next (&iter))
+		if (screen == 0)
+			return iter.data;
+
+	return NULL;
+}
+
 static struct lock *
 lockscreen(Display *dpy, struct xrandr *rr, int screen)
 {
