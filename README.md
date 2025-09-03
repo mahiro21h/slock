@@ -26,7 +26,7 @@ Planned changes
 
 Requirements
 ------------
-you need to install the following patched packages starting from top to bottom (make sure you have xlibre-xserver installed before installing):
+you need to build the following patched dependencies and install them starting from top to bottom (make sure you have xlibre-xserver installed before installing):
 
 - [xorgproto](https://github.com/mahiro21h/xorgproto/tree/myextension)
 - [xcbproto](https://github.com/mahiro21h/xcbproto/tree/myextension)
