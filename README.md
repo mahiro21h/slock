@@ -7,7 +7,7 @@ NOTE: be sure to run `setxkbmap -option "terminate:ctrl_alt_bksp"` before testin
 
 Planned changes
 ---------------
-- [x] perform security checks on `exec_path `
+- [x] perform security checks on `exec_path`
   - [x] verify that `exe_path` is null terminated
   - [x] verify that `exe_path` points to a valid executable
 - [ ] securely re-launch screen locker
