@@ -14,8 +14,8 @@ Planned changes
   - [x] monitor and re-launch screen locker if it crashes
   - [x] ~~cover screens with fallback windows until screen locker creates its windows~~ no longer necessary
   - [ ] handle failed re-launch attempts
-    - [ ] check for failure of `fork()` and `execve()`
-    - [ ] stop re-launching if attempts exceed limit
+    - [x] check for failure of `fork()` and `execv()`
+    - [x] stop re-launching if attempts exceed limit
     - [ ] update screenlocker windows to inform user that the session is now locked
 - [x] screen locker always above all windows
   - [x] ~~add new window attribute specifically for screen locker windows~~ doesn't appear to be necessary
@@ -23,6 +23,10 @@ Planned changes
 - [ ] use xnamespace extension
 - [ ] ensure extension works in the case where the system is woken up after being suspended
 - [ ] ensure extension works in the case where xserver's internal screensaver kicks in while screen is locked?
+- [ ] handle multiple screens
+- [ ] secure input
+  - [ ] only screen locker has access to keyboard and mouse while screen is locked
+
 
 Requirements
 ------------
